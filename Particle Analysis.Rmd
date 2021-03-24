@@ -3,3 +3,18 @@ title: "Particle Analysis Exploration"
 output: html_document
 ---
 
+```{r upload-data}
+library(readxl)
+data <- read_excel("CentrifugeData.xlsx")
+```
+
+What tests to use for goodness of fit?
+```{r}
+
+```
+
+Ideas to improve model fit?
+
+Best way to visualize this data?
+
+Syntax for plotting the predictions of this model type onto the original numbers as a trendline?
