@@ -3,6 +3,7 @@ title: "Particle Analysis Exploration"
 output: html_document
 ---
 
+
 ```{r upload-data}
 library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
@@ -31,6 +32,7 @@ summary(logreg2)
 subset_datapred <- subset_data
 subset_datapred$origfraction <- retained/original
 subset_datapred$logreg2 <- predict(logreg2, type = "response")
+hist(subset_datapred$origfraction)
 ```
 
 ```{r}
@@ -75,13 +77,22 @@ subset_datapred$logreg5removedxtreme <- predict(logreg5removedxtreme, type = "re
 ```
 
 ```{r}
+logreg5 <- glm(origfraction ~ rotation + avgDiameter + particleVolume + particleMass + factor(sample) + expected.vdW, family = quasibinomial(link = "logit"), data = subset_data)
+# changed to quasibinomial and used origfraction as response
+
+subset_data$logreg5 <- predict(logreg5, type = "response")
+```
+
+```{r}
 plot(subset_datapred$origfraction, subset_datapred$logreg2removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$logreg3removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$logreg4removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$logreg5removedxtreme)
+plot(subset_data$origfraction, subset_data$logreg5)
 plot(subset_datapred$origfraction, subset_datapred$origfraction)
-
 ```
+
+
 
 
 What tests to use for goodness of fit?
