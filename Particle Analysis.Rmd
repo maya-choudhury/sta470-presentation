@@ -71,6 +71,7 @@ summary(logreg5removedxtreme)
 
 subset_datapred$logreg5removedxtreme <- predict(logreg5removedxtreme, type = "response")
 
+
 ```
 
 ```{r}
