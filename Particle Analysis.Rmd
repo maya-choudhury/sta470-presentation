@@ -8,6 +8,79 @@ library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
 ```
 
+```{r}
+data$removed <- replace(data$removed, data$removed<0, 0)
+#remove data with negative removal
+
+data <- subset(data, data$rotation!=0)
+#remove data from no centrifugation
+
+for (i in 1:length(data$retained)) {
+  if (data$original[i] < data$retained[i]){
+    data$retained[i] <- data$original[i]
+  }
+}
+
+subset_data <- subset(data, data$original!=0)
+attach(subset_data)
+```
+
+```{r, Hanna's "best model" in class}
+logreg2 <- glm(cbind(removed, retained) ~ workOfAdhesion + (rotation) + density + avgDiameter, data = subset_data, family = binomial(link = "logit"))
+summary(logreg2)
+subset_datapred <- subset_data
+subset_datapred$origfraction <- retained/original
+subset_datapred$logreg2 <- predict(logreg2, type = "response")
+```
+
+```{r}
+subset_data$origfraction <- retained/original
+subset_data_removedxtreme <- subset(subset_data, subset_data$origfraction != 0)
+subset_data_removedxtreme <- subset(subset_data_removedxtreme, subset_data_removedxtreme$origfraction != 1)
+
+logreg2removedxtreme <- glm(cbind(removed, retained) ~ workOfAdhesion + (rotation) + density + avgDiameter, data = subset_data_removedxtreme, family = binomial(link = "logit"))
+subset_datapred <- subset_data_removedxtreme
+subset_datapred$logreg2removedxtreme <- predict(logreg2removedxtreme, type = "response")
+#original one done in class but with removing the extremes
+
+logreg3removedxtreme <- glm(cbind(retained, removed) ~ avgDiameter + workOfAdhesion + (rotation) + avgDiameter + factor(sample), data = subset_data_removedxtreme, family = binomial(link = "logit"))
+subset_datapred$logreg3removedxtreme <- predict(logreg3removedxtreme, type = "response")
+#cbind is switched which I think makes more sense?; also dropped density and used factor(sample) since density did not qualitatively do much (was a proxy for sample type))
+```
+
+```{r}
+library(MASS)
+full.model <- glm(cbind(retained, removed) ~. -origfraction -original,data = subset_data_removedxtreme, family = binomial(link = "logit"))
+# Stepwise regression model
+step.model <- stepAIC(full.model)
+step.model
+```
+```{r}
+summary(logreg3removedxtreme)
+logreg4removedxtreme <- glm(formula = cbind(retained, removed) ~ rotation + avgDiameter + particleVolume + particleMass + factor(sample) + expected.vdW, family = binomial(link = "logit"), data = subset_data_removedxtreme)
+# From step model selection, better AIC...checking for better prediction
+summary(logreg4removedxtreme)
+
+subset_datapred$logreg4removedxtreme <- predict(logreg4removedxtreme, type = "response")
+```
+
+```{r}
+logreg5removedxtreme <- glm(origfraction ~ rotation + avgDiameter + particleVolume + particleMass + factor(sample) + expected.vdW, family = quasibinomial(link = "logit"), data = subset_data_removedxtreme)
+# changed to quasibinomial and used origfraction as response
+summary(logreg5removedxtreme)
+
+subset_datapred$logreg5removedxtreme <- predict(logreg5removedxtreme, type = "response")
+
+```
+
+```{r}
+plot(subset_datapred$origfraction, subset_datapred$logreg2removedxtreme)
+plot(subset_datapred$origfraction, subset_datapred$logreg3removedxtreme)
+plot(subset_datapred$origfraction, subset_datapred$logreg4removedxtreme)
+plot(subset_datapred$origfraction, subset_datapred$logreg5removedxtreme)
+plot(subset_datapred$origfraction, subset_datapred$origfraction)
+```
+
 What tests to use for goodness of fit?
 ```{r}
 
