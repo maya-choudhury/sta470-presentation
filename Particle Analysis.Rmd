@@ -80,7 +80,9 @@ plot(subset_datapred$origfraction, subset_datapred$logreg3removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$logreg4removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$logreg5removedxtreme)
 plot(subset_datapred$origfraction, subset_datapred$origfraction)
+
 ```
+
 
 What tests to use for goodness of fit?
 ```{r}
