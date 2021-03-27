@@ -26,7 +26,7 @@ subset_data <- subset(data, data$original!=0)
 attach(subset_data)
 ```
 
-```{r, Hanna's "best model" in class}
+```{r Hannas-best-model-in-class}
 logreg2 <- glm(cbind(removed, retained) ~ workOfAdhesion + (rotation) + density + avgDiameter, data = subset_data, family = binomial(link = "logit"))
 summary(logreg2)
 subset_datapred <- subset_data
