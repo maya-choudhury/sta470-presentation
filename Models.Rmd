@@ -1,0 +1,118 @@
+---
+title: "Models"
+output: pdf_document
+---
+*** Model_binom is from step selection
+*** model_quasibinom uses same var from step selection but is just quasi -> seems to have improved predictions as the y=x line becomes a bit crisper
+*** model_negbinom predicts removal...lots of over removals as expected, can be seen with the negative fractions
+*** model_negbinom2 I tried to make original count a factor variable to see if that would help with accuracy but still not great
+also made some squished graphs below but am gonna throw it in Tableau to see if anything comes up
+
+```{r}
+# install.packages("tidyverse", type = "binary")
+#library(tidyverse)
+# install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(ggplot2)
+```
+
+```{r upload-data}
+library(readxl)
+data <- read_excel("CentrifugeData.xlsx")
+data$expected.vdw<- (data$hamaker*data$avgDiameter*((10)^-6))/(12*(0.0000000004)^2)
+
+```
+
+```{r, safe data cleaning}
+data$removed <- replace(data$removed, data$removed<0, 0)
+#remove data with negative removal
+
+data <- subset(data, data$rotation!=0)
+#remove data from no centrifugation
+
+for (i in 1:length(data$retained)) {
+  if (data$original[i] < data$retained[i]){
+    data$retained[i] <- data$original[i]
+  }
+}
+
+subset_data <- subset(data, data$original!=0)
+attach(subset_data)
+subset_data$origfraction <- retained/original
+```
+
+```{r}
+library(MASS)
+full.model <- glm(cbind(retained, removed) ~ . -removed -origfraction ,data = subset_data, family = binomial(link = "logit"))
+# Stepwise regression model
+step.model <- stepAIC(full.model)
+```
+
+```{r}
+model_binom <- glm(formula = cbind(retained, removed) ~ avgDiameter + bins + rotation + site + sample + original + type + expected.vdw, 
+    family = binomial(link = "logit"), data = subset_data)
+
+subset_data$model_binom <- predict(model_binom, type = "response")
+```
+
+```{r}
+model_quasibinom <- glm(origfraction ~ avgDiameter + bins + rotation + site + sample + original + type + expected.vdw, family = quasibinomial(link = "logit"), data = subset_data)
+
+subset_data$model_quasibinom <- predict(model_quasibinom, type = "response")
+```
+
+```{r}
+model_negbinom <- glm.nb(removed ~ avgDiameter + bins + rotation + site + sample + original + type + expected.vdw, data = subset_data)
+
+subset_data$model_negbinom <- predict(model_negbinom, type = "response")
+subset_data$model_negbinomfrac <- 
+ (subset_data$original - subset_data$model_negbinom)/(subset_data$original)
+```
+```{r}
+model_negbinom2 <- glm.nb(removed ~ avgDiameter + rotation + as.factor(original) + type + expected.vdw, data = subset_data)
+
+subset_data$model_negbinom2 <- predict(model_negbinom2, type = "response")
+subset_data$model_negbinom2frac <- 
+ (subset_data$original - subset_data$model_negbinom2)/(subset_data$original)
+```
+
+
+
+```{r}
+plot(subset_data$origfraction, subset_data$model_binom)
+plot(subset_data$origfraction, subset_data$model_quasibinom)
+plot(subset_data$origfraction, subset_data$model_negbinomfrac)
+plot(subset_data$origfraction, subset_data$model_negbinom2frac)
+```
+```{r}
+ggplot(subset_data, aes(original, fill = type)) + geom_histogram(binwidth = 1) + scale_y_continuous(trans='log10') + facet_grid(type ~ 
+    ., margins = TRUE, scales = "free")
+```
+```{r}
+ggplot(subset_data, aes(removed, fill = type)) + geom_histogram(binwidth = 1) + scale_y_continuous(trans='log10') + facet_grid(type ~ 
+    ., margins = TRUE, scales = "free")
+```
+
+```{r}
+ggplot(subset_data, aes(original, fill = type)) + geom_histogram(binwidth = 1) + scale_y_continuous(trans='log10') + facet_grid(type ~ 
+    ., margins = TRUE, scales = "free")
+```
+
+
+```{r}
+subset_datagraph <- cbind(subset_data, predict(model_negbinom, subset_data, type = "link", se.fit=TRUE))
+subset_datagraph <- within(subset_datagraph, {
+  removed <- exp(fit)
+  LL <- exp(fit - 1.96 * se.fit)
+  UL <- exp(fit + 1.96 * se.fit)
+})
+
+ggplot(subset_datagraph, aes(avgDiameter, removed)) +
+  geom_ribbon(aes(ymin = LL, ymax = UL, fill = type), alpha = .25) +
+  geom_line(aes(colour = type), size = 2) +
+  labs(x = "x axis", y = "Predicted Removal")
+```
+*fill in whatever x you want 
+
