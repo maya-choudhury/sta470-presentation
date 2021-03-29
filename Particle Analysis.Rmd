@@ -7,7 +7,7 @@ output: html_document
 ```{r upload-data}
 library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
-data2 <- read_excel("CentrifugeData.xlsx")
+data$expected.vdw<- (data$hamaker*data$avgDiameter*((10)^-6))/(12*(0.0000000004)^2)
 ```
 ```{r}
 # install.packages("tidyverse", type = "binary")
@@ -119,11 +119,6 @@ ggplot(data=data_for_plot)+geom_violin(aes(x=rotation, y=origfraction, group=rot
 #comparison plot of everything against each other
 #type
 ```
-```{r}
-data$expected.vdw<- (data$hamaker*data$density)/(12*(data$workOfAdhesion)*data$workOfAdhesion)
-```
-
-
 
 
 ### Trendline
