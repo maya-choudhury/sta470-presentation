@@ -9,8 +9,11 @@ library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
 ```
 ```{r}
-install.packages("tidyverse")
+# install.packages("tidyverse", type = "binary")
 library(tidyverse)
+# install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -107,11 +110,13 @@ What tests to use for goodness of fit?
 Ideas to improve model fit?
 
 Best way to visualize this data?
-
+### Visualizations
 ```{r}
-data %>% 
-  filter(rotation==1000)
+data_for_plot <- subset_data %>% 
+  group_by(rotation==1000)
+data_for_plot
+ggplot(data=data_for_plot)+geom_violin(aes(x=rotation, y=removed, group=rotation))
 ```
 
-
+### Trendline
 Syntax for plotting the predictions of this model type onto the original numbers as a trendline?
