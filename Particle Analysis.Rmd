@@ -116,7 +116,13 @@ Best way to visualize this data?
 data_for_plot <- subset_data
 data_for_plot
 ggplot(data=data_for_plot)+geom_violin(aes(x=rotation, y=origfraction, group=rotation))
+#comparison plot of everything against each other
+#type
 ```
+```{r}
+data$expected.vdw<- (data$hamaker*data$density)/(12*(data$workOfAdhesion)*data$workOfAdhesion)
+```
+
 
 
 
