@@ -8,6 +8,10 @@ output: html_document
 library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
 ```
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
 
 ```{r}
 data$removed <- replace(data$removed, data$removed<0, 0)
@@ -103,5 +107,11 @@ What tests to use for goodness of fit?
 Ideas to improve model fit?
 
 Best way to visualize this data?
+
+```{r}
+data %>% 
+  filter(rotation==1000)
+```
+
 
 Syntax for plotting the predictions of this model type onto the original numbers as a trendline?
