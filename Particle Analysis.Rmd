@@ -137,7 +137,7 @@ neg_data <- data2 %>%
     original >= retained ~ 1
   ))
 neg_data %>% 
-  ggplot()  + geom_jitter(aes(x=rotation, y=density, color=neg))
+  ggplot()  + geom_jitter(aes(x=rotation, y=density, color=neg), alpha=0.5)
 ```
 
 ### Trendline
