@@ -7,6 +7,7 @@ output: html_document
 ```{r upload-data}
 library(readxl)
 data <- read_excel("CentrifugeData.xlsx")
+data2 <- read_excel("CentrifugeData.xlsx")
 data$expected.vdw<- (data$hamaker*data$avgDiameter*((10)^-6))/(12*(0.0000000004)^2)
 ```
 ```{r}
@@ -119,7 +120,25 @@ ggplot(data=data_for_plot)+geom_violin(aes(x=rotation, y=origfraction, group=rot
 #comparison plot of everything against each other
 #type
 ```
-
+```{r}
+ata_for_plot %>% 
+  filter(type=="solosphere") %>% 
+ggplot()  + geom_jitter(aes(x=rotation, y=origfraction, color=type), alpha=0.5)
+```
+```{r}
+data_for_plot %>% 
+  filter(type!="solosphere") %>% 
+ggplot()  + geom_jitter(aes(x=rotation, y=origfraction, color=type), alpha=0.5)
+```
+```{r}
+neg_data <- data2 %>% 
+  mutate(neg=case_when(
+    original<retained ~ 0,
+    original >= retained ~ 1
+  ))
+neg_data %>% 
+  ggplot()  + geom_jitter(aes(x=rotation, y=density, color=neg))
+```
 
 ### Trendline
 Syntax for plotting the predictions of this model type onto the original numbers as a trendline?
